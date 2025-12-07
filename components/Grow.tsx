@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Briefcase, X, Check, Star, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Briefcase, X, Check, Star, RefreshCw, ArrowLeft, ArrowRight } from 'lucide-react';
 import { JobItem } from '../types';
 
 const MOCK_JOBS: JobItem[] = [
@@ -49,11 +49,20 @@ export const Grow: React.FC = () => {
     }, 300);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') handleSwipe('left');
+      if (e.key === 'ArrowRight') handleSwipe('right');
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const currentJob = MOCK_JOBS[currentIndex];
 
   return (
     <div className="p-4 md:p-8 h-full flex flex-col max-w-7xl mx-auto">
-      <header className="mb-6 md:text-center">
+      <header className="mb-6 md:text-center animate-fade-in-up">
         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Grow</h2>
         <p className="text-slate-500 text-sm md:text-base mt-1">Launch your career in Linköping</p>
       </header>
@@ -63,25 +72,43 @@ export const Grow: React.FC = () => {
         
         {/* Background decorative elements for Desktop */}
         <div className="absolute inset-0 hidden md:flex items-center justify-center pointer-events-none">
-            <div className="w-[500px] h-[500px] bg-indigo-100/50 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="w-[400px] h-[400px] bg-blue-100/40 rounded-full blur-3xl absolute top-10 right-20 animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+        </div>
+
+        {/* Keyboard Hints for Desktop */}
+        <div className="hidden md:flex justify-between w-full max-w-3xl absolute top-1/2 -translate-y-1/2 px-8 pointer-events-none opacity-30">
+             <div className="flex flex-col items-center gap-2">
+                 <div className="w-12 h-12 border-2 border-slate-900 rounded-lg flex items-center justify-center text-slate-900 font-bold">
+                     <ArrowLeft className="w-6 h-6" />
+                 </div>
+                 <span className="text-xs font-bold uppercase">Pass</span>
+             </div>
+             <div className="flex flex-col items-center gap-2">
+                 <div className="w-12 h-12 border-2 border-slate-900 rounded-lg flex items-center justify-center text-slate-900 font-bold">
+                     <ArrowRight className="w-6 h-6" />
+                 </div>
+                 <span className="text-xs font-bold uppercase">Apply</span>
+             </div>
         </div>
 
         {currentJob ? (
           <div className={`
             relative z-10 w-full max-w-sm md:max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[550px] md:h-[600px]
-            transition-transform duration-300 ease-out
-            ${lastDirection === 'left' ? '-translate-x-20 -rotate-12 opacity-50' : ''}
-            ${lastDirection === 'right' ? 'translate-x-20 rotate-12 opacity-50' : ''}
+            transition-transform duration-300 ease-out cursor-grab active:cursor-grabbing
+            ${lastDirection === 'left' ? '-translate-x-32 -rotate-12 opacity-50' : ''}
+            ${lastDirection === 'right' ? 'translate-x-32 rotate-12 opacity-50' : ''}
           `}>
             {/* Header / Image Placeholder */}
-            <div className="h-44 md:h-52 bg-slate-900 relative flex items-center justify-center overflow-hidden group cursor-pointer">
+            <div className="h-44 md:h-52 bg-slate-900 relative flex items-center justify-center overflow-hidden group">
                <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500">
                     <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                         <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+                        <circle cx="20" cy="20" r="20" fill="white" opacity="0.1" />
                     </svg>
                </div>
                <div className="z-10 text-center transform group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-3 flex items-center justify-center text-3xl font-bold text-slate-900 shadow-xl">
+                  <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-3 flex items-center justify-center text-3xl font-bold text-slate-900 shadow-xl ring-4 ring-white/20">
                     {currentJob.company.charAt(0)}
                   </div>
                   <h3 className="text-white font-bold text-xl tracking-wide">{currentJob.company}</h3>
@@ -96,8 +123,8 @@ export const Grow: React.FC = () => {
                         {currentJob.type}
                     </span>
                  </div>
-                 <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full border-4 border-green-400 flex items-center justify-center text-sm font-bold text-slate-900 shadow-sm animate-bounce-slow">
+                 <div className="flex flex-col items-center group">
+                    <div className="w-14 h-14 rounded-full border-4 border-emerald-400 flex items-center justify-center text-sm font-bold text-slate-900 shadow-sm group-hover:scale-110 transition-transform bg-white">
                         {currentJob.matchScore}%
                     </div>
                     <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Match</span>
@@ -111,7 +138,7 @@ export const Grow: React.FC = () => {
                  </p>
                  <div className="flex flex-wrap gap-2">
                     {currentJob.tags.map(tag => (
-                        <span key={tag} className="text-xs md:text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors cursor-default">
+                        <span key={tag} className="text-xs md:text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors cursor-default border border-slate-200">
                             #{tag}
                         </span>
                     ))}
@@ -123,34 +150,39 @@ export const Grow: React.FC = () => {
             <div className="p-6 md:p-8 pt-0 grid grid-cols-3 gap-6">
                 <button 
                   onClick={() => handleSwipe('left')}
-                  className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-90 transition-all duration-200 mx-auto shadow-sm"
+                  className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-90 transition-all duration-200 mx-auto shadow-sm group"
+                  title="Not interested"
                 >
-                    <X className="w-7 h-7" />
+                    <X className="w-7 h-7 group-hover:-rotate-90 transition-transform" />
                 </button>
                 <div className="flex items-center justify-center">
-                    <button className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 hover:scale-110 active:scale-90 transition-all duration-200 shadow-inner">
+                    <button 
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 hover:scale-110 active:scale-90 transition-all duration-200 shadow-inner"
+                        title="Save for later"
+                    >
                         <Star className="w-6 h-6" />
                     </button>
                 </div>
                 <button 
                   onClick={() => handleSwipe('right')}
-                  className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 text-white shadow-xl hover:bg-emerald-500 hover:shadow-emerald-200 hover:scale-110 active:scale-90 transition-all duration-200 mx-auto"
+                  className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 text-white shadow-xl hover:bg-emerald-500 hover:shadow-emerald-200 hover:scale-110 active:scale-90 transition-all duration-200 mx-auto group"
+                  title="I'm interested"
                 >
-                    <Check className="w-7 h-7" />
+                    <Check className="w-7 h-7 group-hover:scale-125 transition-transform" />
                 </button>
             </div>
           </div>
         ) : (
            /* Empty State */
-           <div className="text-center p-8 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200 max-w-sm animate-fade-in-up">
-              <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
+           <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200 max-w-sm animate-fade-in-up shadow-xl">
+              <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600 animate-bounce">
                   <Briefcase className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">All caught up!</h3>
               <p className="text-slate-500 text-base mb-6">You've seen all tailored opportunities for now.</p>
               <button 
                 onClick={() => setCurrentIndex(0)}
-                className="flex items-center gap-2 mx-auto text-indigo-600 font-bold text-sm bg-indigo-50 px-6 py-3 rounded-full hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="flex items-center gap-2 mx-auto text-indigo-600 font-bold text-sm bg-indigo-50 px-6 py-3 rounded-full hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all duration-200 border border-indigo-100"
               >
                   <RefreshCw className="w-4 h-4" />
                   Review Again
